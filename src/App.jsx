@@ -18,6 +18,7 @@ import { ManageArticles } from './pages/admin/ManageArticles';
 import { CreateArticle } from './pages/admin/CreateArticle';
 import { TeamManagement } from './pages/admin/TeamManagement';
 import { AINewsAssistant } from './pages/admin/AINewsAssistant';
+import { Subscribers } from './pages/admin/Subscribers';
 
 const PublicLayout = () => {
   return (
@@ -54,6 +55,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="articles" element={<ManageArticles />} />
             <Route path="articles/create" element={<CreateArticle />} />
+            <Route path="subscribers" element={<Subscribers />} />
             <Route path="team" element={<TeamManagement />} />
             <Route path="ai-assistant" element={<AINewsAssistant />} />
           </Route>
@@ -62,6 +64,7 @@ function App() {
     </AuthProvider>
   );
 }
+
 
 
 export default App;

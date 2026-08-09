@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
-import { LayoutDashboard, FileText, PlusCircle, LogOut, TrendingUp, Users, Bot } from 'lucide-react';
+import { LayoutDashboard, FileText, PlusCircle, LogOut, TrendingUp, Users, Bot, Mail } from 'lucide-react';
 
 export const AdminLayout = () => {
   const { user, logout, loading } = useAuth();
@@ -31,8 +31,10 @@ export const AdminLayout = () => {
     { name: 'Articles', path: '/admin/articles', icon: FileText, show: true },
     { name: 'Create Article', path: '/admin/articles/create', icon: PlusCircle, show: isAdmin || user?.role === 'writer' },
     { name: 'AI Assistant', path: '/admin/ai-assistant', icon: Bot, show: isAdmin },
+    { name: 'Subscribers', path: '/admin/subscribers', icon: Mail, show: isAdmin },
     { name: 'Team', path: '/admin/team', icon: Users, show: isSuperAdmin },
   ].filter(item => item.show);
+
 
   return (
     <div className="min-h-screen bg-slate-950 flex">

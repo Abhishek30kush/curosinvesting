@@ -2,17 +2,42 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp } from 'lucide-react';
 import { FaTwitter, FaLinkedin, FaFacebook, FaInstagram } from 'react-icons/fa';
+import { db } from '../../lib/firebase';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 
 export const Footer = () => {
   const [email, setEmail] = React.useState('');
   const [subscribed, setSubscribed] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!email) return;
-    setSubscribed(true);
-    setEmail('');
+    setSubmitting(true);
+    try {
+      if (db) {
+        const cleanEmail = email.toLowerCase().trim();
+        const q = query(collection(db, 'subscribers'), where('email', '==', cleanEmail));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          await addDoc(collection(db, 'subscribers'), {
+            email: cleanEmail,
+            status: 'active',
+            subscribedAt: serverTimestamp(),
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          });
+        }
+      }
+      setSubscribed(true);
+      setEmail('');
+    } catch (err) {
+      console.error("Newsletter subscription error:", err);
+      setSubscribed(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   return (
     <footer className="bg-slate-950 border-t border-white/5 pt-16 pb-8">

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Menu, X, TrendingUp } from 'lucide-react';
+import { Search, Menu, X, TrendingUp, Mail, CheckCircle } from 'lucide-react';
+import { db } from '../../lib/firebase';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 
 const MOCK_TICKERS = [
   { symbol: 'SENSEX', price: '73,500.20', change: '+1.2%', isUp: true },
@@ -14,6 +16,10 @@ const MOCK_TICKERS = [
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [tickers, setTickers] = useState(MOCK_TICKERS);
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [subEmail, setSubEmail] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Simulate live updates
   useEffect(() => {
@@ -26,6 +32,34 @@ export const Navbar = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleModalSubscribe = async (e) => {
+    e.preventDefault();
+    if (!subEmail) return;
+    setIsSubmitting(true);
+    try {
+      if (db) {
+        const cleanEmail = subEmail.toLowerCase().trim();
+        const q = query(collection(db, 'subscribers'), where('email', '==', cleanEmail));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          await addDoc(collection(db, 'subscribers'), {
+            email: cleanEmail,
+            status: 'active',
+            subscribedAt: serverTimestamp(),
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          });
+        }
+      }
+      setIsSubscribed(true);
+      setSubEmail('');
+    } catch (err) {
+      console.error("Newsletter error:", err);
+      setIsSubscribed(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <header className="fixed top-0 w-full z-50">
@@ -69,10 +103,10 @@ export const Navbar = () => {
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
-              <button className="p-2 text-slate-400 hover:text-white transition-colors">
-                <Search className="h-5 w-5" />
-              </button>
-              <button className="px-6 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/50 rounded-full font-medium hover:bg-emerald-500 hover:text-slate-950 glow-primary transition-all duration-300">
+              <button 
+                onClick={() => setShowSubscribeModal(true)}
+                className="px-6 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/50 rounded-full font-medium hover:bg-emerald-500 hover:text-slate-950 glow-primary transition-all duration-300 text-sm"
+              >
                 Subscribe
               </button>
             </div>
@@ -98,13 +132,87 @@ export const Navbar = () => {
               <Link to="/category/crypto" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-md">Crypto</Link>
               <Link to="/category/investing" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-md">Investing</Link>
               <Link to="/category/economy" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-md">Economy</Link>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="w-full mt-4 px-6 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/50 rounded-full font-medium">
+              <button 
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setShowSubscribeModal(true);
+                }} 
+                className="w-full mt-4 px-6 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/50 rounded-full font-medium"
+              >
                 Subscribe
               </button>
             </div>
           </div>
         )}
       </nav>
+
+      {/* Subscribe Modal */}
+      {showSubscribeModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-emerald-500/30 rounded-2xl max-w-md w-full p-6 relative shadow-2xl">
+            <button 
+              onClick={() => {
+                setShowSubscribeModal(false);
+                setIsSubscribed(false);
+              }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {isSubscribed ? (
+              <div className="text-center py-6">
+                <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+                <h3 className="text-xl font-bold text-white mb-2">You're Subscribed!</h3>
+                <p className="text-slate-400 text-sm">Thank you for subscribing to Curos Investing Newsletter. You'll receive real-time financial market updates.</p>
+                <button
+                  onClick={() => {
+                    setShowSubscribeModal(false);
+                    setIsSubscribed(false);
+                  }}
+                  className="mt-6 bg-emerald-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl hover:bg-emerald-400 text-sm"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Subscribe to Newsletter</h3>
+                    <p className="text-xs text-slate-400">Daily market signals & expert analysis</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleModalSubscribe} className="space-y-4 pt-2">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={subEmail}
+                      onChange={(e) => setSubEmail(e.target.value)}
+                      placeholder="your.email@example.com"
+                      className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 text-sm"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-emerald-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-emerald-400 glow-primary transition-all text-sm disabled:opacity-50"
+                  >
+                    {isSubmitting ? 'Subscribing...' : 'Join Newsletter'}
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 };
+
