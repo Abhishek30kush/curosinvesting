@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Menu, X, TrendingUp, Mail, CheckCircle } from 'lucide-react';
-import { db } from '../../lib/firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { db, hasValidFirebaseConfig } from '../../lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const MOCK_TICKERS = [
   { symbol: 'SENSEX', price: '73,500.20', change: '+1.2%', isUp: true },
@@ -37,20 +37,36 @@ export const Navbar = () => {
     e.preventDefault();
     if (!subEmail) return;
     setIsSubmitting(true);
+    const cleanEmail = subEmail.toLowerCase().trim();
+
     try {
-      if (db) {
-        const cleanEmail = subEmail.toLowerCase().trim();
-        const q = query(collection(db, 'subscribers'), where('email', '==', cleanEmail));
-        const snap = await getDocs(q);
-        if (snap.empty) {
-          await addDoc(collection(db, 'subscribers'), {
+      // 1. Sync to LocalStorage
+      try {
+        const localSubs = JSON.parse(localStorage.getItem('curos_subscribers') || '[]');
+        if (!localSubs.some(s => s.email === cleanEmail)) {
+          localSubs.push({
+            id: 'local_' + Date.now(),
             email: cleanEmail,
             status: 'active',
-            subscribedAt: serverTimestamp(),
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           });
+          localStorage.setItem('curos_subscribers', JSON.stringify(localSubs));
         }
+      } catch (e) {
+        console.warn("LocalStorage save error", e);
       }
+
+      // 2. Sync to Firestore DB
+      if (db && hasValidFirebaseConfig) {
+        const docId = cleanEmail.replace(/[^a-z0-9]/g, '_');
+        await setDoc(doc(db, 'subscribers', docId), {
+          email: cleanEmail,
+          status: 'active',
+          subscribedAt: serverTimestamp(),
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        });
+      }
+
       setIsSubscribed(true);
       setSubEmail('');
     } catch (err) {
@@ -60,6 +76,7 @@ export const Navbar = () => {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <header className="fixed top-0 w-full z-50">

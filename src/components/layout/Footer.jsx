@@ -2,41 +2,64 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp } from 'lucide-react';
 import { FaTwitter, FaLinkedin, FaFacebook, FaInstagram } from 'react-icons/fa';
-import { db } from '../../lib/firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { db, hasValidFirebaseConfig } from '../../lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export const Footer = () => {
   const [email, setEmail] = React.useState('');
   const [subscribed, setSubscribed] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState('');
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!email) return;
     setSubmitting(true);
+    setErrorMsg('');
+    const cleanEmail = email.toLowerCase().trim();
+
     try {
-      if (db) {
-        const cleanEmail = email.toLowerCase().trim();
-        const q = query(collection(db, 'subscribers'), where('email', '==', cleanEmail));
-        const snap = await getDocs(q);
-        if (snap.empty) {
-          await addDoc(collection(db, 'subscribers'), {
+      // 1. Save to LocalStorage sync fallback
+      try {
+        const localSubs = JSON.parse(localStorage.getItem('curos_subscribers') || '[]');
+        if (!localSubs.some(s => s.email === cleanEmail)) {
+          localSubs.push({
+            id: 'local_' + Date.now(),
             email: cleanEmail,
             status: 'active',
-            subscribedAt: serverTimestamp(),
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           });
+          localStorage.setItem('curos_subscribers', JSON.stringify(localSubs));
         }
+      } catch (e) {
+        console.warn("LocalStorage save error", e);
       }
+
+      // 2. Save to Firestore DB
+      if (db && hasValidFirebaseConfig) {
+        const docId = cleanEmail.replace(/[^a-z0-9]/g, '_');
+        await setDoc(doc(db, 'subscribers', docId), {
+          email: cleanEmail,
+          status: 'active',
+          subscribedAt: serverTimestamp(),
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        });
+      }
+
       setSubscribed(true);
       setEmail('');
     } catch (err) {
       console.error("Newsletter subscription error:", err);
-      setSubscribed(true);
+      if (err.code === 'permission-denied') {
+        setErrorMsg("Firestore permission error: Please set rules for 'subscribers' collection to 'allow create: if true;' in Firebase Console.");
+      } else {
+        setSubscribed(true); // Fallback success from localStorage
+      }
     } finally {
       setSubmitting(false);
     }
   };
+
 
 
   return (
@@ -81,6 +104,11 @@ export const Footer = () => {
               </div>
             ) : (
               <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
+                {errorMsg && (
+                  <div className="p-2 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg mb-2">
+                    {errorMsg}
+                  </div>
+                )}
                 <input 
                   type="email" 
                   required
@@ -89,11 +117,12 @@ export const Footer = () => {
                   placeholder="Enter your email" 
                   className="bg-slate-900 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
-                <button type="submit" className="bg-emerald-500 text-slate-950 font-semibold px-4 py-2 rounded-lg hover:bg-emerald-400 transition-colors glow-primary">
-                  Subscribe
+                <button type="submit" disabled={submitting} className="bg-emerald-500 text-slate-950 font-semibold px-4 py-2 rounded-lg hover:bg-emerald-400 transition-colors glow-primary disabled:opacity-50">
+                  {submitting ? 'Subscribing...' : 'Subscribe'}
                 </button>
               </form>
             )}
+
           </div>
         </div>
 

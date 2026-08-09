@@ -15,15 +15,31 @@ export const Subscribers = () => {
 
   const fetchSubscribers = async () => {
     try {
-      if (!db) {
-        setLoading(false);
-        return;
+      let list = [];
+
+      // 1. Fetch from Firestore
+      if (db) {
+        try {
+          const querySnapshot = await getDocs(collection(db, 'subscribers'));
+          querySnapshot.forEach((docSnap) => {
+            list.push({ id: docSnap.id, ...docSnap.data() });
+          });
+        } catch (e) {
+          console.warn("Firestore subscribers fetch issue", e);
+        }
       }
-      const querySnapshot = await getDocs(collection(db, 'subscribers'));
-      const list = [];
-      querySnapshot.forEach((doc) => {
-        list.push({ id: doc.id, ...doc.data() });
-      });
+
+      // 2. Fetch from LocalStorage fallback
+      try {
+        const localSubs = JSON.parse(localStorage.getItem('curos_subscribers') || '[]');
+        localSubs.forEach(ls => {
+          if (!list.some(s => s.email?.toLowerCase() === ls.email?.toLowerCase())) {
+            list.push(ls);
+          }
+        });
+      } catch (e) {
+        console.warn("LocalStorage subscribers fetch issue", e);
+      }
 
       // Sort by date newest first
       list.sort((a, b) => {
@@ -43,14 +59,21 @@ export const Subscribers = () => {
   const handleDeleteSubscriber = async (id) => {
     if (!window.confirm("Are you sure you want to remove this subscriber?")) return;
     try {
-      if (db) {
+      if (db && !id.startsWith('local_')) {
         await deleteDoc(doc(db, 'subscribers', id));
-        setSubscribers(prev => prev.filter(s => s.id !== id));
       }
+      try {
+        const localSubs = JSON.parse(localStorage.getItem('curos_subscribers') || '[]');
+        const updatedLocal = localSubs.filter(s => s.id !== id && s.email !== id);
+        localStorage.setItem('curos_subscribers', JSON.stringify(updatedLocal));
+      } catch (e) {}
+
+      setSubscribers(prev => prev.filter(s => s.id !== id));
     } catch (err) {
       console.error("Error deleting subscriber:", err);
     }
   };
+
 
   const handleCopyEmails = () => {
     const emailsList = filteredSubscribers.map(s => s.email).join(', ');
