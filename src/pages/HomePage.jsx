@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { TrendingUp, ShieldCheck, Zap, BarChart3, Bitcoin, Globe, Briefcase } from 'lucide-react';
 import { ArticleCard } from '../components/ui/ArticleCard';
-import { db } from '../lib/firebase';
+import { db, hasValidFirebaseConfig } from '../lib/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+
 
 const MOCK_CATEGORIES = [
   { name: 'Markets', icon: BarChart3, slug: 'markets', color: 'from-emerald-400 to-emerald-600' },
@@ -61,6 +62,11 @@ export const HomePage = () => {
 
   useEffect(() => {
     const fetchArticles = async () => {
+      if (!db || !hasValidFirebaseConfig) {
+        setLoading(false);
+        return;
+      }
+
       try {
         // Fetching without composite query to bypass Firestore Index requirement
         const querySnapshot = await getDocs(collection(db, 'articles'));
@@ -75,7 +81,9 @@ export const HomePage = () => {
              return dateB - dateA;
           });
           
-        setArticles(fetched);
+        if (fetched.length > 0) {
+          setArticles(fetched);
+        }
       } catch (error) {
         console.error("Error fetching articles:", error);
         setErrorMsg(error.message);
@@ -85,6 +93,7 @@ export const HomePage = () => {
     };
     fetchArticles();
   }, []);
+
 
   // Use the first real article as featured, and remaining articles in the latest section
   const featuredArticle = articles.length > 0 ? articles[0] : MOCK_ARTICLES[0];

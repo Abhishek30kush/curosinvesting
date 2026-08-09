@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
-import { TrendingUp, AlertCircle } from 'lucide-react';
+import { TrendingUp, AlertCircle, CheckCircle } from 'lucide-react';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   
-  const { login, user } = useAuth();
+  const { login, resetPassword, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,6 +22,7 @@ export const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setIsSubmitting(true);
     
     try {
@@ -30,6 +33,24 @@ export const Login = () => {
       setError('Invalid email or password.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address to send a password reset link.');
+      return;
+    }
+    setError('');
+    setSuccess('');
+    setIsResetting(true);
+    try {
+      await resetPassword(email);
+      setSuccess(`Password reset link sent to ${email}. Check your inbox!`);
+    } catch (err) {
+      setError(err.message || 'Failed to send reset link. Ensure email is registered.');
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -44,8 +65,15 @@ export const Login = () => {
 
         {error && (
           <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-lg mb-6 flex items-center gap-2 text-sm">
-            <AlertCircle className="w-4 h-4" />
-            {error}
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 p-3 rounded-lg mb-6 flex items-center gap-2 text-sm">
+            <CheckCircle className="w-4 h-4 shrink-0" />
+            <span>{success}</span>
           </div>
         )}
 
@@ -58,10 +86,21 @@ export const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-slate-900 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+              placeholder="admin@example.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-medium text-slate-300">Password</label>
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={isResetting}
+                className="text-xs text-emerald-400 hover:text-emerald-300 hover:underline disabled:opacity-50"
+              >
+                {isResetting ? 'Sending link...' : 'Forgot password?'}
+              </button>
+            </div>
             <input 
               type="password" 
               required
@@ -82,3 +121,4 @@ export const Login = () => {
     </div>
   );
 };
+
