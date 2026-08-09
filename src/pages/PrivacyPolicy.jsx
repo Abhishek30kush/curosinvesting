@@ -1,10 +1,16 @@
 import React from 'react';
 import { ShieldCheck } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const PrivacyPolicy = () => {
   return (
     <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto min-h-screen text-slate-300">
+      <SEO 
+        title="Privacy Policy | Curos Investing"
+        description="Read the Privacy Policy for Curos Investing to understand how we collect, use, and protect your personal information."
+      />
       <div className="flex items-center gap-3 mb-6">
+
         <ShieldCheck className="w-10 h-10 text-emerald-500" />
         <h1 className="text-4xl font-extrabold text-white">Privacy Policy</h1>
       </div>

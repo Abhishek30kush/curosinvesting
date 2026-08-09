@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Clock, User, ChevronLeft, ShieldCheck, FileText } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const ArticlePage = () => {
   const { slug } = useParams();
@@ -53,9 +54,18 @@ export const ArticlePage = () => {
 
   return (
     <article className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto min-h-screen">
+      <SEO 
+        title={`${article.title} | Curos Investing`}
+        description={article.excerpt || `${article.title} - Read the full financial analysis, market implications, and strategic takeaways on Curos Investing.`}
+        keywords={`${article.category}, ${article.title.toLowerCase().split(' ').slice(0, 5).join(', ')}, Curos Investing`}
+        image={article.coverImage}
+        type="article"
+        articleData={article}
+      />
       <Link to="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-emerald-500 transition-colors mb-8 text-sm">
         <ChevronLeft className="w-4 h-4" /> Back to Home
       </Link>
+
       
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-6">

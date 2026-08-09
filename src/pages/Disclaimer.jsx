@@ -1,10 +1,16 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const Disclaimer = () => {
   return (
     <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto min-h-screen text-slate-300">
+      <SEO 
+        title="Financial Disclaimer | Curos Investing"
+        description="Important financial risk disclosures, investment warning, and legal statements for Curos Investing readers."
+      />
       <div className="flex items-center gap-3 mb-6">
+
         <AlertTriangle className="w-10 h-10 text-amber-500" />
         <h1 className="text-4xl font-extrabold text-white">Financial Disclaimer</h1>
       </div>

@@ -1,10 +1,16 @@
 import React from 'react';
 import { TrendingUp, ShieldCheck, Award, Globe } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const AboutUs = () => {
   return (
     <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto min-h-screen text-slate-300">
+      <SEO 
+        title="About Us & EEAT Editorial Standards | Curos Investing"
+        description="Learn about Curos Investing, our mission, experienced financial research team, and rigorous editorial standards."
+      />
       <div className="text-center mb-12">
+
         <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <TrendingUp className="w-8 h-8 text-emerald-500" />
         </div>

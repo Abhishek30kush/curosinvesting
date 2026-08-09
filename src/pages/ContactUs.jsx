@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Send, CheckCircle } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const ContactUs = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -12,7 +13,12 @@ export const ContactUs = () => {
 
   return (
     <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto min-h-screen text-slate-300">
+      <SEO 
+        title="Contact Us | Curos Investing Editorial Team"
+        description="Get in touch with the Curos Investing editorial research team for press inquiries, feedback, or partnership proposals."
+      />
       <div className="text-center mb-12">
+
         <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <Mail className="w-8 h-8 text-emerald-500" />
         </div>

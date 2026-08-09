@@ -4,6 +4,8 @@ import { TrendingUp, ShieldCheck, Zap, BarChart3, Bitcoin, Globe, Briefcase } fr
 import { ArticleCard } from '../components/ui/ArticleCard';
 import { db, hasValidFirebaseConfig } from '../lib/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { SEO } from '../components/SEO';
+
 
 const MOCK_CATEGORIES = [
   { name: 'Markets', icon: BarChart3, slug: 'markets', color: 'from-emerald-400 to-emerald-600' },
@@ -106,7 +108,13 @@ export const HomePage = () => {
 
   return (
     <div className="pt-24 pb-16">
+      <SEO 
+        title="Curos Investing | Financial News, Stock Market & Crypto Intelligence"
+        description="Premium financial news, expert stock market analysis, crypto updates, and macro-economic intelligence for modern investors."
+        keywords="investing, finance, stock market, crypto, bitcoin, market news, SENSEX, NIFTY, Curos Investing"
+      />
       {/* Hero Section */}
+
       <section className="relative px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-20">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none" />
         

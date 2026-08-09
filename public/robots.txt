@@ -1,0 +1,22 @@
+# robots.txt for Curos Investing (SEO & AEO Engine Optimized)
+User-agent: *
+Allow: /
+Disallow: /admin/
+
+# Allow AI Search Engine Crawlers & LLM Web Indexers for AI Search (Perplexity, ChatGPT, Gemini, Claude)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://curosinvesting.vercel.app/sitemap.xml

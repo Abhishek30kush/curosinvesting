@@ -1,10 +1,16 @@
 import React from 'react';
 import { FileText } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const TermsOfService = () => {
   return (
     <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto min-h-screen text-slate-300">
+      <SEO 
+        title="Terms of Service | Curos Investing"
+        description="Terms of Service and legal agreement governing the use of Curos Investing platform and financial content."
+      />
       <div className="flex items-center gap-3 mb-6">
+
         <FileText className="w-10 h-10 text-emerald-500" />
         <h1 className="text-4xl font-extrabold text-white">Terms of Service</h1>
       </div>

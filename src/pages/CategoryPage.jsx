@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { ArticleCard } from '../components/ui/ArticleCard';
+import { SEO } from '../components/SEO';
 
 export const CategoryPage = () => {
   const { slug } = useParams();
@@ -16,6 +17,10 @@ export const CategoryPage = () => {
     const fetchCategoryArticles = async () => {
       setLoading(true);
       try {
+        if (!db) {
+          setLoading(false);
+          return;
+        }
         const querySnapshot = await getDocs(collection(db, 'articles'));
         let fetched = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
@@ -43,9 +48,15 @@ export const CategoryPage = () => {
 
   return (
     <div className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-screen">
+      <SEO 
+        title={`${categoryName} News & Market Updates | Curos Investing`}
+        description={`Latest financial news, stock market updates, expert research, and insights on ${categoryName.toLowerCase()}.`}
+        keywords={`${categoryName}, ${categoryName} news, finance, market analysis, Curos Investing`}
+      />
       <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
         <span className="text-emerald-500">{categoryName}</span> News
       </h1>
+
       <p className="text-slate-400 mb-12 max-w-2xl text-lg">
         The latest updates, deep dives, and expert perspectives on {categoryName.toLowerCase()}.
       </p>
