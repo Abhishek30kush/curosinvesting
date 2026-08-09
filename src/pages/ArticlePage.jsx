@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Clock, User, ChevronLeft, ShieldCheck, FileText, Share2, Copy, Check } from 'lucide-react';
+import { Clock, User, ChevronLeft, ShieldCheck, FileText, Share2, Copy, Check, Volume2, VolumeX } from 'lucide-react';
 import { FaTwitter, FaLinkedin, FaWhatsapp, FaFacebook } from 'react-icons/fa';
 import { SEO } from '../components/SEO';
 
@@ -12,6 +12,15 @@ export const ArticlePage = () => {
   const [loading, setLoading] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,6 +85,23 @@ export const ArticlePage = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleToggleAudio = () => {
+    if (!('speechSynthesis' in window)) return;
+    if (isPlayingAudio) {
+      window.speechSynthesis.cancel();
+      setIsPlayingAudio(false);
+    } else {
+      window.speechSynthesis.cancel();
+      const textToRead = article.title + '. ' + plainText;
+      const utterance = new SpeechSynthesisUtterance(textToRead.substring(0, 1500));
+      utterance.rate = 1.0;
+      utterance.onend = () => setIsPlayingAudio(false);
+      utterance.onerror = () => setIsPlayingAudio(false);
+      window.speechSynthesis.speak(utterance);
+      setIsPlayingAudio(true);
+    }
+  };
+
   return (
     <article className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto min-h-screen relative">
       {/* Top Reading Progress Bar */}
@@ -95,6 +121,13 @@ export const ArticlePage = () => {
 
       {/* Floating Social Share Sidebar for Desktop */}
       <div className="hidden lg:flex flex-col gap-3 fixed left-8 top-1/3 z-40 bg-slate-900/80 backdrop-blur-md border border-white/10 p-2.5 rounded-2xl shadow-xl">
+        <button 
+          onClick={handleToggleAudio}
+          className={`p-2.5 rounded-xl transition-all ${isPlayingAudio ? 'bg-emerald-500 text-slate-950 glow-primary' : 'bg-slate-800 text-slate-300 hover:text-emerald-400'}`}
+          title={isPlayingAudio ? "Stop Audio Reader" : "Listen to Article"}
+        >
+          {isPlayingAudio ? <VolumeX className="w-5 h-5 animate-pulse" /> : <Volume2 className="w-5 h-5" />}
+        </button>
         <a 
           href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + currentUrl)}`}
           target="_blank" 
@@ -137,19 +170,25 @@ export const ArticlePage = () => {
 
       
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-6">
-          <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold rounded-full border border-emerald-500/20">
-            {article.category}
-          </span>
-          <span className="text-xs text-slate-400 flex items-center gap-1">
-            <FileText className="w-3.5 h-3.5 text-emerald-500" />
-            {wordCount > 0 ? `${wordCount} words` : 'Long-form Analysis'}
-          </span>
-          <span className="text-xs text-slate-400 flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5 text-emerald-500" />
-            {readingTime} min read
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 rounded-full text-xs font-semibold uppercase tracking-wider">
+              {article.category}
+            </span>
+            <span className="flex items-center gap-1.5 text-xs text-slate-400">
+              <Clock className="w-3.5 h-3.5 text-emerald-500" /> {readingTime} min read ({wordCount} words)
+            </span>
+          </div>
+
+          <button 
+            onClick={handleToggleAudio}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs font-bold hover:bg-emerald-500/10 transition-colors"
+          >
+            {isPlayingAudio ? <VolumeX className="w-4 h-4 text-emerald-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+            {isPlayingAudio ? "Stop Audio Reader" : "🔊 Listen to Article"}
+          </button>
         </div>
+
 
         <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
           {article.title}

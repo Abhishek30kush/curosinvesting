@@ -11,6 +11,7 @@ import { TermsOfService } from './pages/TermsOfService';
 import { Disclaimer } from './pages/Disclaimer';
 import { AboutUs } from './pages/AboutUs';
 import { ContactUs } from './pages/ContactUs';
+import { Calculators } from './pages/Calculators';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { Login } from './pages/admin/Login';
 import { Dashboard } from './pages/admin/Dashboard';
@@ -42,6 +43,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/category/:slug" element={<CategoryPage />} />
             <Route path="/article/:slug" element={<ArticlePage />} />
+            <Route path="/calculators" element={<Calculators />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/disclaimer" element={<Disclaimer />} />

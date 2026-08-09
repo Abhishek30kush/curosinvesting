@@ -201,7 +201,9 @@ export const Navbar = () => {
               <Link to="/category/crypto" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Crypto</Link>
               <Link to="/category/investing" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Investing</Link>
               <Link to="/category/economy" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Economy</Link>
+              <Link to="/calculators" className="text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors">Calculators</Link>
             </div>
+
 
             <div className="hidden md:flex items-center space-x-4">
               <button 
