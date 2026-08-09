@@ -37,12 +37,13 @@ export const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-3">
-              <li><Link to="/category/markets" className="text-slate-400 hover:text-emerald-500 transition-colors">Markets</Link></li>
-              <li><Link to="/category/crypto" className="text-slate-400 hover:text-emerald-500 transition-colors">Crypto</Link></li>
-              <li><Link to="/category/investing" className="text-slate-400 hover:text-emerald-500 transition-colors">Investing</Link></li>
-              <li><Link to="/category/economy" className="text-slate-400 hover:text-emerald-500 transition-colors">Economy</Link></li>
+            <h3 className="text-white font-semibold mb-4">Company & Legal</h3>
+            <ul className="space-y-3 text-sm">
+              <li><Link to="/about" className="text-slate-400 hover:text-emerald-500 transition-colors">About Us</Link></li>
+              <li><Link to="/contact" className="text-slate-400 hover:text-emerald-500 transition-colors">Contact Us</Link></li>
+              <li><Link to="/disclaimer" className="text-slate-400 hover:text-emerald-500 transition-colors">Disclaimer</Link></li>
+              <li><Link to="/privacy-policy" className="text-slate-400 hover:text-emerald-500 transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms-of-service" className="text-slate-400 hover:text-emerald-500 transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
 
@@ -71,16 +72,18 @@ export const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-slate-500 text-sm">
-            &copy; {new Date().getFullYear()} Curos Investing. All rights reserved.
+        <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-xs">
+          <p className="text-slate-500">
+            &copy; {new Date().getFullYear()} Curos Investing. All rights reserved. Financial news & market analysis.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <Link to="#" className="text-slate-500 hover:text-white text-sm">Privacy Policy</Link>
-            <Link to="#" className="text-slate-500 hover:text-white text-sm">Terms of Service</Link>
+            <Link to="/privacy-policy" className="text-slate-500 hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms-of-service" className="text-slate-500 hover:text-white transition-colors">Terms of Service</Link>
+            <Link to="/disclaimer" className="text-slate-500 hover:text-white transition-colors">Disclaimer</Link>
           </div>
         </div>
       </div>
     </footer>
   );
 };
+
