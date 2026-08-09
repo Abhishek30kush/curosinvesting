@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { TrendingUp, ShieldCheck, Zap, BarChart3, Bitcoin, Globe, Briefcase } from 'lucide-react';
 import { ArticleCard } from '../components/ui/ArticleCard';
 import { db, hasValidFirebaseConfig } from '../lib/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
-
 
 const MOCK_CATEGORIES = [
   { name: 'Markets', icon: BarChart3, slug: 'markets', color: 'from-emerald-400 to-emerald-600' },
@@ -11,6 +11,7 @@ const MOCK_CATEGORIES = [
   { name: 'Economy', icon: Globe, slug: 'economy', color: 'from-blue-400 to-blue-600' },
   { name: 'Investing', icon: Briefcase, slug: 'investing', color: 'from-purple-400 to-purple-600' },
 ];
+
 
 const MOCK_ARTICLES = [
   {
@@ -138,15 +139,20 @@ export const HomePage = () => {
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {MOCK_CATEGORIES.map((category) => (
-            <div key={category.name} className="glass-card p-6 flex flex-col items-center justify-center gap-4 group cursor-pointer">
+            <Link 
+              key={category.name} 
+              to={`/category/${category.slug}`}
+              className="glass-card p-6 flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-emerald-500/50 hover:bg-white/[0.08] transition-all duration-300"
+            >
               <div className={`p-4 rounded-full bg-gradient-to-br ${category.color} bg-opacity-10 shadow-[0_0_15px_rgba(255,255,255,0.1)] group-hover:scale-110 transition-transform`}>
                 <category.icon className="w-8 h-8 text-white" />
               </div>
-              <span className="font-semibold text-slate-200 group-hover:text-white">{category.name}</span>
-            </div>
+              <span className="font-semibold text-slate-200 group-hover:text-white transition-colors">{category.name}</span>
+            </Link>
           ))}
         </div>
       </section>
+
 
       {/* Latest News */}
       <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-20">
