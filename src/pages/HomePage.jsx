@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, ShieldCheck, Zap, BarChart3, Bitcoin, Globe, Briefcase } from 'lucide-react';
 import { ArticleCard } from '../components/ui/ArticleCard';
+import { TradingViewWidget } from '../components/ui/TradingViewWidget';
 import { db, hasValidFirebaseConfig } from '../lib/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { SEO } from '../components/SEO';
+
 
 
 const MOCK_CATEGORIES = [
@@ -138,7 +140,13 @@ export const HomePage = () => {
         <div className="mb-16">
           <ArticleCard article={featuredArticle} featured={true} />
         </div>
+
+        {/* Live TradingView Financial Data Widget */}
+        <div className="mb-16">
+          <TradingViewWidget />
+        </div>
       </section>
+
 
       {/* Categories */}
       <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-20">

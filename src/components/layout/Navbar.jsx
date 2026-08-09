@@ -17,9 +17,49 @@ export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [tickers, setTickers] = useState(MOCK_TICKERS);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [subEmail, setSubEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Search articles dynamically from Firestore
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        if (db) {
+          const { collection: col, getDocs: gDocs } = await import('firebase/firestore');
+          const snap = await gDocs(col(db, 'articles'));
+          const results = [];
+          snap.forEach(docSnap => {
+            const data = docSnap.data();
+            if (
+              data.status === 'published' &&
+              (data.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               data.excerpt?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               data.category?.toLowerCase().includes(searchQuery.toLowerCase()))
+            ) {
+              results.push({ id: docSnap.id, ...data });
+            }
+          });
+          setSearchResults(results.slice(0, 5));
+        }
+      } catch (e) {
+        console.error("Search error:", e);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Simulate live updates
   useEffect(() => {
@@ -32,6 +72,7 @@ export const Navbar = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
 
   const handleModalSubscribe = async (e) => {
     e.preventDefault();
@@ -121,12 +162,21 @@ export const Navbar = () => {
 
             <div className="hidden md:flex items-center space-x-4">
               <button 
+                onClick={() => setShowSearchModal(true)}
+                className="p-2 text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs bg-slate-900 border border-white/10 px-3 py-1.5 rounded-full"
+                title="Search Articles"
+              >
+                <Search className="h-4 w-4 text-emerald-400" />
+                <span className="text-slate-400">Search...</span>
+              </button>
+              <button 
                 onClick={() => setShowSubscribeModal(true)}
                 className="px-6 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/50 rounded-full font-medium hover:bg-emerald-500 hover:text-slate-950 glow-primary transition-all duration-300 text-sm"
               >
                 Subscribe
               </button>
             </div>
+
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center">
@@ -229,7 +279,64 @@ export const Navbar = () => {
           </div>
         </div>
       )}
+
+      {/* Live Search Modal */}
+      {showSearchModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-start justify-center pt-20 p-4 z-50">
+          <div className="bg-slate-900 border border-white/10 rounded-2xl max-w-xl w-full p-6 relative shadow-2xl">
+            <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-4 mb-4">
+              <div className="flex items-center gap-3 flex-1">
+                <Search className="w-5 h-5 text-emerald-400" />
+                <input
+                  type="text"
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search articles by title, topic, or keyword..."
+                  className="bg-transparent border-none text-white text-base focus:outline-none w-full placeholder-slate-500"
+                />
+              </div>
+              <button 
+                onClick={() => {
+                  setShowSearchModal(false);
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Results List */}
+            <div className="max-h-96 overflow-y-auto space-y-3">
+              {isSearching ? (
+                <div className="text-center py-8 text-emerald-400 text-sm">Searching Curos Investing articles...</div>
+              ) : searchQuery && searchResults.length === 0 ? (
+                <div className="text-center py-8 text-slate-500 text-sm">No articles found matching "{searchQuery}".</div>
+              ) : (
+                searchResults.map((res) => (
+                  <Link
+                    key={res.id}
+                    to={`/article/${res.slug}`}
+                    onClick={() => {
+                      setShowSearchModal(false);
+                      setSearchQuery('');
+                    }}
+                    className="block p-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/5 transition-all"
+                  >
+                    <span className="text-xs uppercase font-bold text-emerald-400 mb-1 block">{res.category}</span>
+                    <h4 className="text-white font-semibold text-sm line-clamp-1">{res.title}</h4>
+                    <p className="text-slate-400 text-xs line-clamp-1 mt-1">{res.excerpt}</p>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
+
 

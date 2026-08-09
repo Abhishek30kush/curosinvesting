@@ -2,13 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Clock, User, ChevronLeft, ShieldCheck, FileText } from 'lucide-react';
+import { Clock, User, ChevronLeft, ShieldCheck, FileText, Share2, Copy, Check } from 'lucide-react';
+import { FaTwitter, FaLinkedin, FaWhatsapp, FaFacebook } from 'react-icons/fa';
 import { SEO } from '../components/SEO';
 
 export const ArticlePage = () => {
   const { slug } = useParams();
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        const currentProgress = (window.scrollY / totalHeight) * 100;
+        setScrollProgress(currentProgress);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -52,8 +67,23 @@ export const ArticlePage = () => {
   const wordCount = plainText.trim().split(/\s+/).filter(Boolean).length;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
+  const currentUrl = window.location.href;
+  const shareTitle = article.title;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(currentUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <article className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto min-h-screen">
+    <article className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto min-h-screen relative">
+      {/* Top Reading Progress Bar */}
+      <div 
+        className="fixed top-0 left-0 h-1 bg-emerald-500 z-50 transition-all duration-150 shadow-[0_0_10px_rgba(16,185,129,0.8)]"
+        style={{ width: `${scrollProgress}%` }}
+      />
+
       <SEO 
         title={`${article.title} | Curos Investing`}
         description={article.excerpt || `${article.title} - Read the full financial analysis, market implications, and strategic takeaways on Curos Investing.`}
@@ -62,6 +92,45 @@ export const ArticlePage = () => {
         type="article"
         articleData={article}
       />
+
+      {/* Floating Social Share Sidebar for Desktop */}
+      <div className="hidden lg:flex flex-col gap-3 fixed left-8 top-1/3 z-40 bg-slate-900/80 backdrop-blur-md border border-white/10 p-2.5 rounded-2xl shadow-xl">
+        <a 
+          href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + currentUrl)}`}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="p-2.5 bg-slate-800 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 rounded-xl transition-all"
+          title="Share on WhatsApp"
+        >
+          <FaWhatsapp className="w-5 h-5" />
+        </a>
+        <a 
+          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(currentUrl)}`}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="p-2.5 bg-slate-800 hover:bg-blue-500/20 text-slate-300 hover:text-blue-400 rounded-xl transition-all"
+          title="Share on Twitter/X"
+        >
+          <FaTwitter className="w-5 h-5" />
+        </a>
+        <a 
+          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="p-2.5 bg-slate-800 hover:bg-blue-600/20 text-slate-300 hover:text-blue-500 rounded-xl transition-all"
+          title="Share on LinkedIn"
+        >
+          <FaLinkedin className="w-5 h-5" />
+        </a>
+        <button 
+          onClick={handleCopyLink}
+          className="p-2.5 bg-slate-800 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 rounded-xl transition-all"
+          title="Copy Article Link"
+        >
+          {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
+        </button>
+      </div>
+
       <Link to="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-emerald-500 transition-colors mb-8 text-sm">
         <ChevronLeft className="w-4 h-4" /> Back to Home
       </Link>
